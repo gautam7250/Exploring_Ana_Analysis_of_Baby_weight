@@ -1,0 +1,106 @@
+https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=qwiklabs-gcp-02-727e0801a990&ws=!1m5!1m4!1m3!1sqwiklabs-gcp-02-727e0801a990!2sbquxjob_1b23fb67_17b82b82389!3sUS&page=queries
+
+ID - student-00-5c6a36ce550c@qwiklabs.net
+Pass- GB8bn3ZWFk
+
+https://accounts.google.com/AddSession?service=accountsettings&sarp=1&continue=https%3A%2F%2Fconsole.cloud.google.com%2Fhome%2Fdashboard%3Fproject%3Dqwiklabs-gcp-02-727e0801a990#Email=student-00-5c6a36ce550c@qwiklabs.net
+
+#standardsql
+#medicare claims in 2014
+SELECT
+    nppes_provider_state AS state,
+    ROUND(SUM(total_claim_count) /1 e6) AS total_claim_counts_millions
+FROM
+    'bigquery-public-data.medicare.part-d-prescriber-2014'
+GROUP BY
+    state
+ORDER BY 
+    total_claim_counts_millions DESC 
+LIMIT 5
+
+
+
+Notebook
+
+query = """
+SELECT
+    weight_pounds,
+    is_male,
+    mother_age,
+    plurality,
+    gestation_weeks,
+    ABS(FARM_FINGERPRINT(CONCAT(CAST(YEAR AS STRING), CAST(month AS STRING))))
+FROM
+    publicdata.samples.natality
+WHERE year > 2000
+"""
+
+
+pip install datalab
+# Call Bigquery and examine in dataframe
+import google.datalab.bigquery as bq
+
+df = bq.Query(query + " LIMIT 100").execute().result().to_dataframe()
+
+
+# Bar plot to use gestation_weeks with avg_wt linear and num_babies
+df = get_distinct_values('gestation_weeks')
+df = df.sort_values('gestation_weeks')
+df.plot(x='gestation_weeks', y = 'num_babies', logy=True, kind='bar')
+df.plot(x='gestation_weeks',y='avg_wt',kind='bar');
+
+**Let's write a query to find the unique values for each of the columns and the count of those values. This is important to ensure that we have enough examples of each data value, and to verify our hunch that the parameter has predictive value.**
+
+
+# Create function that finds the number of records and the average weight
+
+def get_distinct_values(column_name):
+    sql = """
+    SELECT
+        {0},
+        COUNT(1) AS num_babies,
+        AVG(weight_pounds) AS avg_wt
+    FROM
+        publicdata.samples.natality
+    WHERE
+        year > 200
+    GROUP BY
+        {0}
+    """.format(column_name)
+    return bp.Query(sql).execute().result().to_dataframe()
+
+
+
+# Bar plot to use gestation_weeks with avg_wt linear and num_babies
+df = get_distinct_values('gestation_weeks')
+df = df.sort_values('gestation_weeks')
+df.plot(x='gestation_weeks', y = 'num_babies', logy=True, kind='bar')
+df.plot(x='gestation_weeks',y='avg_wt',kind='bar');
+
+
+# Bar plot to see is_male with avg_wt linear and num_babies logrithmic
+df = get_distinct_values('is_male')
+df.plot(x='is_male',y='num_babies', kind='bar');
+df.plot(x='is_male', y='avg_wt', kind='bar', color='red')
+
+# Line plots to see mother_age with average weight(avg_wt) linear and num_babies lograthmic
+df = get_distinct_values('mother_age')
+df = df.sort_values('mother_age')
+df.plot(x='mother_age', y='num_babies')
+df.plot(x='mother_age', y='avg_wt')
+
+
+
+# Bar plot to see plurality (singleton, twins, etc,) with avg_wt linear
+df = get_distinct_values('plurality')
+df = df.sort_values('plurality')
+df.plot(x='plurality', y='num_babies', logy=True,kind='bar');
+df.plot(x='plurality',y='avg_wt',kind='bar')
+
+
+# Bar plot to see getation_weeks with avg_wt linear and num_babies
+
+df = get_distinct_values('gestation_weeks')
+df=df.sort_values('gestation_weeks')
+df.plot(x='gestation_weeks',y='num_babies', logy=True, kind='bar')
+df.plot(x='gestation_weeks', y='avg_wt', kind='bar')
